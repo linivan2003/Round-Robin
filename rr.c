@@ -160,7 +160,36 @@ int main(int argc, char *argv[])
   u32 total_response_time = 0;
 
   /* Your code here */
-  
+  struct process *current_process;
+u32 current_time = 0; // Initialize current time to 0
+
+// Add elements to the list
+for (u32 i = 0; i < size; ++i) {
+    // Create a new process and set its attributes
+    struct process* new_process = &data[i];
+    
+    // Insert the new process into the list
+    TAILQ_INSERT_TAIL(&list, new_process, pointers);
+}
+
+
+// Traverse the list of processes
+TAILQ_FOREACH(current_process, &list, pointers) {
+    // Calculate waiting time for the current process
+    u32 waiting_time = current_time - current_process->arrival_time;
+    printf("Current Time: %u\n", current_time);
+    printf("Burst Time: %u\n", current_process->burst_time);
+    printf("Arrival Time: %u\n", current_process->arrival_time);
+    // Calculate response time for the current process
+    u32 response_time = waiting_time; // In FCFS, response time is the same as waiting time
+    // Update total waiting time and total response time
+    total_waiting_time += waiting_time;
+    total_response_time += response_time;
+    
+    // Update current time to account for process execution time
+    current_time += current_process->burst_time;
+}
+
   /* End of "Your code here" */
 
   printf("Average waiting time: %.2f\n", (float)total_waiting_time / (float)size);
