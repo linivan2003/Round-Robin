@@ -21,6 +21,11 @@ struct process
   TAILQ_ENTRY(process) pointers;
 
   /* Additional fields here */
+  u32 remaining_burst_time;
+  u32 added;
+  u32 started;
+  u32 end_time;
+  u32 start_time;
   /* End of "Additional fields here" */
 };
 
@@ -160,36 +165,86 @@ int main(int argc, char *argv[])
   u32 total_response_time = 0;
 
   /* Your code here */
-  struct process *current_process;
-u32 current_time = 0; // Initialize current time to 0
+  
+  //if it is -1 it hasnt been added to queue
+    for(int i = 0; i < size; i++){
+    data[i].added = -1;
+    data[i].started = -1;
+    data[i].remaining_burst_time = data[i].burst_time;
+    data[i].start_time = -1;
+    }
+  // insert first process
+ TAILQ_INSERT_TAIL(&list, &data[0], pointers);
+  data[0].added = 0;
+//calculate total burst time
+  int total_burst_time =0;
+  for(int i = 0; i < size;i++)
+  {
+    total_burst_time = data[i].burst_time + total_burst_time;
+  }
+  //while loop that carries out processes
+  int time = 0;
+  struct process *curr_proc;
+  while (time != total_burst_time){
+      curr_proc = TAILQ_FIRST(&list);
+      //check if burst time is less or equal to than quantum length, if it is we increment time accordingly and 
+      //break out of the loop, this means the process 
+       // if this is first time starting process, update start  and update started parameter
+      //move to the back and update the remaining burst time
+      if(curr_proc->remaining_burst_time <= quantum_length)
+      {
+        if(curr_proc->start_time == -1){
+         printf("Initializing start time for process %u at time %u\n", curr_proc->pid, time);
+          curr_proc->start_time = time;
+          curr_proc->started = 0;
+          } 
+        for(int i = 0; i < curr_proc->remaining_burst_time; i++){ //run current process
+        time++;
+        printf("time %u: \n", time);
+      //add processes to queue based on current clock
+        for(int i = 0; i < size + 1; i++){
+          if(data[i].arrival_time <= time && data[i].added == -1){
+          TAILQ_INSERT_TAIL(&list, &data[i], pointers);
+          printf("added current time: %u , pid added: %u\n", time, data[i].pid);
+          data[i].added = 0;
+        }
+      }
+      }
+      curr_proc->end_time = time;
+      printf("current pid ended %u, current time %u\n", curr_proc->pid, time);
+      TAILQ_REMOVE(&list, curr_proc, pointers); // we can remove the process because it is finished
+      continue;
+      }
+       // if this is first time starting process, update start  and update started parameter
+      //move to the back and update the remaining burst time
+        if(curr_proc->start_time == -1){   
+     printf("Initializing start time for process %u at time %u\n", curr_proc->pid, time);
+      curr_proc->start_time = time;
+      curr_proc->started = 0;
+      } 
+      for(int i = 0; i < quantum_length; i++){ //run current process not finished scenario
+        time++;
+        printf("time %u: \n", time);
+      //add processes to queue based on current clock
+        for(int i = 0; i < size + 1; i++){
+          if(data[i].arrival_time <= time && data[i].added == -1){
+          TAILQ_INSERT_TAIL(&list, &data[i], pointers);
+          printf("added current time: %u , pid added: %u\n", time, data[i].pid);
+          data[i].added = 0;
+        }
+      }
+      }
+     
+       TAILQ_REMOVE(&list, curr_proc, pointers);
+       TAILQ_INSERT_TAIL(&list, curr_proc, pointers);
+       curr_proc->remaining_burst_time = curr_proc->remaining_burst_time - quantum_length;
+  }
 
-// Add elements to the list
-for (u32 i = 0; i < size; ++i) {
-    // Create a new process and set its attributes
-    struct process* new_process = &data[i];
-    
-    // Insert the new process into the list
-    TAILQ_INSERT_TAIL(&list, new_process, pointers);
-}
-
-
-// Traverse the list of processes
-TAILQ_FOREACH(current_process, &list, pointers) {
-    // Calculate waiting time for the current process
-    u32 waiting_time = current_time - current_process->arrival_time;
-    printf("Current Time: %u\n", current_time);
-    printf("Burst Time: %u\n", current_process->burst_time);
-    printf("Arrival Time: %u\n", current_process->arrival_time);
-    // Calculate response time for the current process
-    u32 response_time = waiting_time; // In FCFS, response time is the same as waiting time
-    // Update total waiting time and total response time
-    total_waiting_time += waiting_time;
-    total_response_time += response_time;
-    
-    // Update current time to account for process execution time
-    current_time += current_process->burst_time;
-}
-
+  for(int i = 0; i < size; i++){ //add up wait times
+    total_waiting_time = total_waiting_time +  (data[i].end_time-data[i].arrival_time - data[i].burst_time);
+    total_response_time = total_response_time +  (data[i].start_time - data[i].arrival_time);
+    printf("pid: %u, endtime: %u, arrival time: %u, starttime: %u, \n", data[i].pid,data[i].end_time,data[i].arrival_time,data[i].start_time);
+  }
   /* End of "Your code here" */
 
   printf("Average waiting time: %.2f\n", (float)total_waiting_time / (float)size);
@@ -197,4 +252,4 @@ TAILQ_FOREACH(current_process, &list, pointers) {
 
   free(data);
   return 0;
-}
+  }
