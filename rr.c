@@ -194,42 +194,42 @@ int main(int argc, char *argv[])
       if(curr_proc->remaining_burst_time <= quantum_length)
       {
         if(curr_proc->start_time == -1){
-         printf("Initializing start time for process %u at time %u\n", curr_proc->pid, time);
+         //printf("Initializing start time for process %u at time %u\n", curr_proc->pid, time);
           curr_proc->start_time = time;
           curr_proc->started = 0;
           } 
         for(int i = 0; i < curr_proc->remaining_burst_time; i++){ //run current process
         time++;
-        printf("time %u: \n", time);
+        //printf("time %u: \n", time);
       //add processes to queue based on current clock
         for(int i = 0; i < size + 1; i++){
           if(data[i].arrival_time <= time && data[i].added == -1){
           TAILQ_INSERT_TAIL(&list, &data[i], pointers);
-          printf("added current time: %u , pid added: %u\n", time, data[i].pid);
+          //printf("added current time: %u , pid added: %u\n", time, data[i].pid);
           data[i].added = 0;
         }
       }
       }
       curr_proc->end_time = time;
-      printf("current pid ended %u, current time %u\n", curr_proc->pid, time);
+      //printf("current pid ended %u, current time %u\n", curr_proc->pid, time);
       TAILQ_REMOVE(&list, curr_proc, pointers); // we can remove the process because it is finished
       continue;
       }
        // if this is first time starting process, update start  and update started parameter
       //move to the back and update the remaining burst time
         if(curr_proc->start_time == -1){   
-     printf("Initializing start time for process %u at time %u\n", curr_proc->pid, time);
+     //printf("Initializing start time for process %u at time %u\n", curr_proc->pid, time);
       curr_proc->start_time = time;
       curr_proc->started = 0;
       } 
       for(int i = 0; i < quantum_length; i++){ //run current process not finished scenario
         time++;
-        printf("time %u: \n", time);
+        //printf("time %u: \n", time);
       //add processes to queue based on current clock
         for(int i = 0; i < size + 1; i++){
           if(data[i].arrival_time <= time && data[i].added == -1){
           TAILQ_INSERT_TAIL(&list, &data[i], pointers);
-          printf("added current time: %u , pid added: %u\n", time, data[i].pid);
+          //printf("added current time: %u , pid added: %u\n", time, data[i].pid);
           data[i].added = 0;
         }
       }
@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
   for(int i = 0; i < size; i++){ //add up wait times
     total_waiting_time = total_waiting_time +  (data[i].end_time-data[i].arrival_time - data[i].burst_time);
     total_response_time = total_response_time +  (data[i].start_time - data[i].arrival_time);
-    printf("pid: %u, endtime: %u, arrival time: %u, starttime: %u, \n", data[i].pid,data[i].end_time,data[i].arrival_time,data[i].start_time);
+   // printf("pid: %u, endtime: %u, arrival time: %u, starttime: %u, \n", data[i].pid,data[i].end_time,data[i].arrival_time,data[i].start_time);
   }
   /* End of "Your code here" */
 
